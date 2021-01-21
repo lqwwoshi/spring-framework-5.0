@@ -353,7 +353,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy if we have advice.
 		//这一步就拿到了所有advisor，然后就可以进行代理对象的构建，切面的织入了
 		//切面织入这里看来就是把通知应用到目标对象，使其成为目标对象的过程
-		O bject[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 			//最重要的方法。。开始创建代表对象
