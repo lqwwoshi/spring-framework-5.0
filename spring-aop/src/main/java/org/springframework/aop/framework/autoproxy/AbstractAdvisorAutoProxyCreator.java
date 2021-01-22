@@ -73,7 +73,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
+		//找合适的增强器对象
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
+		//若为空表示没找到
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
 		}
@@ -93,8 +95,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 		//先拿到所有增强器对象
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		//主要就是判断找到的通知能不能作用到当前的类上
 		//这里会进行一些校验操作
-		//1:比如切点匹配
+		//1:比如切点匹配，因为Advisor会有切点表达式
 		//2:比如切点表达式匹配即这里是切点和声明的通知的匹配过程
 		//比如说你切点声明名字写错了，就是这里会抛异常
 		//比如说这个bean有没有增强器对象可以应用(即这个类在不在切点表达式内。。)
@@ -129,6 +132,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
+		/**
+		 * 通过通知者检测帮助类来帮助我们找到通知
+		 *
+		 */
 		return this.advisorRetrievalHelper.findAdvisorBeans();
 	}
 
@@ -149,6 +156,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
+			//从候选的通知器中找到合适正在创建的实例对象的通知器
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

@@ -98,6 +98,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 					aspectNames = new ArrayList<>();
 					/**
 					 * 值得注意的是这里传入的是Obejct对象，代表去容器中获取所有的组件名称，然后在经过一一遍历
+					 * 比对是否有加Aspect注解
 					 * 这个过程是比较耗性能的，所以Spring会把切面信息进行缓存
 					 * 但是事务功能不一样，事务模块的功能是直接去容器中获取Advisor类型的，选择范围小，且不消耗性能
 					 * 所以Spring没有在事务模块中加入缓存保存事务相关的advisor
@@ -121,18 +122,21 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						//1:是否有加@Aspect注解
 						//2:判断是否是AspectJ编译器编译的
 						if (this.advisorFactory.isAspect(beanType)) {
+							//是切面类
+							//加入到缓存中
 							aspectNames.add(beanName);
+							//把beanName和class对象构建成为一个AspectMetadata
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							//单例切面
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
 								//构建切面注解的实例工厂
+								//可以看到这个工厂是利用当前的BeanFactory和当前正在解析的beanName来构造的
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								//真正的去获取我们的实例工厂(核心方法)
-								//比较复杂找时间看
-								//大致看了一下就是找类里面的带四个@Before等注解的方法，然后封装一下
-								//这里应该不进行校验，即如果声明的切点不存在，这里也不会有校验，正在校验
-								//的地方不在这里
+								//真正的去获取我们的通知实例(核心方法)
+								//大致看了一下就是找类里面的带四个类似@Before等注解的方法，然后封装一下
+								//这里应该不进行校验，即如果声明的切点不存在，这里也不会有校验，真正校验1的地方不在这里
+								//即一个切面类的一个通知方法作为一个Advisor，而整体切面类是Aspect
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								//加入到缓存
 								if (this.beanFactory.isSingleton(beanName)) {
@@ -162,6 +166,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 			}
 		}
 
+		//下面都是非第一次初始化从缓存中拿的代码
 		if (aspectNames.isEmpty()) {
 			return Collections.emptyList();
 		}
