@@ -163,6 +163,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		//首先currentInterceptorIndex是-1，不是从0开始的，为什么不是从0开始。。我也没有理解
 		//所以如果当前的currentInterceptorIndex是advise总数-1的时候，那就是没有advise需要织入了
 		//那么当然去执行目标方法
+		//todo 可以看下interceptorsAndDynamicMethodMatchers的初始化和里面的对象结构
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 			return invokeJoinpoint();
 		}
@@ -188,7 +189,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		else {
 			// It's an interceptor, so we just invoke it: The pointcut will have
 			// been evaluated statically before this object was constructed.
-			//这里需要注意，把this传过去了
+			//这里需要注意，把this传过去了，下面会在调用this.proceed()
 			return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 		}
 	}
