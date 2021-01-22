@@ -221,6 +221,7 @@ public abstract class AopUtils {
 			return false;
 		}
 
+		//都是从切点上拿到的
 		ClassFilter classFilter = pc.getClassFilter();
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		//所有方法需要匹配
@@ -231,25 +232,33 @@ public abstract class AopUtils {
 		}
 
 		IntroductionAwareMethodMatcher introductionAwareMethodMatcher = null;
-		//这里会进
+		//判断匹配器是不是IntroductionAwareMethodMatcher,这里会进
 		if (methodMatcher instanceof IntroductionAwareMethodMatcher) {
 			introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;
 		}
 
 		Set<Class<?>> classes = new LinkedHashSet<>();
+		//判断当前class是不是代理的class对象
 		if (!Proxy.isProxyClass(targetClass)) {
+			//加入到集合中去
 			classes.add(ClassUtils.getUserClass(targetClass));
 		}
+		//获取到targetClass所实现的接口的class对象，然后加入到集合中
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
 
+		//下面即循环所有class的所有方法，查看是否能匹配上切点表达式
+		//循环所有的class对象
 		for (Class<?> clazz : classes) {
+			//通过class获取到所有的方法
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
+			//循环所有方法
 			for (Method method : methods) {
 				//用introductionAwareMethodMatcher的match()方法进行匹配，尝试看了一下
 				//比较复杂，嵌套多，只要知道这里会用aspectJ的切点表达式匹配规则进行匹配就可以了
 				//值得注意的是如果表达式从包开始就不匹配，那么一样的也会在这里进行match，当然结果是false
 				if (introductionAwareMethodMatcher != null ?
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
+						//通过方法匹配器进行匹配
 						methodMatcher.matches(method, targetClass)) {
 					return true;
 				}
@@ -286,7 +295,9 @@ public abstract class AopUtils {
 		if (advisor instanceof IntroductionAdvisor) {
 			return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
 		}
-		//判断我们事务的增强器BeanFactoryTransactionAttributeSourceAdvisor是否实现了PointcutAdvisor
+		//判断是否实现了PointcutAdvisor
+		//我们在shouldSkip()里构造的是InstantiationModelAwarePointcutAdvisor类型的对象，
+		//其是实现了PointcutAdvisor的
 		else if (advisor instanceof PointcutAdvisor) {
 			//转为PointcutAdvisor类型
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
@@ -318,12 +329,15 @@ public abstract class AopUtils {
 		//循环我们候选的增强器对象
 		for (Advisor candidate : candidateAdvisors) {
 			//判断我们的增强器对象是不是实现了IntroductionAdvisor (很明显我们事务的没有实现 所以不会走下面的逻辑)
+			//我们切面对应的Advisor好像也没有实现
 			//只有实现了IntroductionAdvisor才会加入到这个集合当中
+			//这个Introduction目前和xml有关，记得xml好像有这玩意的声明
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
 		}
 		//不为空
+		//这里又在循环了一次，值得注意的是这里循环的不是eligibleAdvisors，还是所有增强器对象candidateAdvisors
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
@@ -333,6 +347,7 @@ public abstract class AopUtils {
 			}
 			/**
 			 * 真正的判断增强器是否合适当前类型
+			 * 这里我们注解的Aspect就会进了
 			 */
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);

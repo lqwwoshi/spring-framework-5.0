@@ -160,7 +160,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	public Object proceed() throws Throwable {
 		//	We start with an index of -1 and increment early.
 		//好，递归的精髓就在这里
-		//首先currentInterceptorIndex是-1，不是从0开始的
+		//首先currentInterceptorIndex是-1，不是从0开始的，为什么不是从0开始。。我也没有理解
 		//所以如果当前的currentInterceptorIndex是advise总数-1的时候，那就是没有advise需要织入了
 		//那么当然去执行目标方法
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
@@ -170,6 +170,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		//否则找到下一个advise执行
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+		//下面这个动态匹配器一般不会进。。
 		if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
 			// Evaluate dynamic method matcher here: static part will already have
 			// been evaluated and found to match.

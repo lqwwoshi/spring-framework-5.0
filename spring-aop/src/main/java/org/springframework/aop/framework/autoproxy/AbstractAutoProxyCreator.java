@@ -471,8 +471,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		//复制一下属性
 		proxyFactory.copyFrom(this);
 
+		//为proxyFactory设置创建jdk还是cglib代理
 		if (!proxyFactory.isProxyTargetClass()) {
-			//是否声明了targetClass属性，后面会看到了，声明了则会使用cglib代理
+			//是否声明了targetClass属性，后面就会看到了，声明了则会使用cglib代理
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}

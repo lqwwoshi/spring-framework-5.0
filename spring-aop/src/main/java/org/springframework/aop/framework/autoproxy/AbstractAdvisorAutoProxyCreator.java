@@ -75,7 +75,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		//找合适的增强器对象
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
-		//若为空表示没找到
+		//若为空表示没找到，不需要代理
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
 		}
