@@ -33,6 +33,7 @@ import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.CallbackPreferringPlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -280,27 +281,40 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		// If the transaction attribute is null, the method is non-transactional.
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 获取对应事务属性
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+		// 获取beanFactory中的transactionManager
+		// 这个transactionManager看起来是自己配的？
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+		// 构造方法唯一标识（类.方法，如：service.UserServiceImpl.save）
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
+		// 声明式事务处理
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			// 创建TransactionInfo
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 			Object retVal = null;
 			try {
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
+				// 执行原方法
+				// 继续调用方法拦截器链,这里一般将会调用目标类的方法,如:AccountServiceImpl.save方法
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
+				// 异常回滚
 				// target invocation exception
 				completeTransactionAfterThrowing(txInfo, ex);
+				// 手动向上抛出异常，则下面的提交事务不会执行
+				// 如果子事务出异常，则外层事务代码需catch住子事务代码，不然外层事务也会回滚
 				throw ex;
 			}
 			finally {
+				//消除事务信息
 				cleanupTransactionInfo(txInfo);
 			}
+			// 提交事务
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -310,6 +324,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 			// It's a CallbackPreferringPlatformTransactionManager: pass a TransactionCallback in.
 			try {
+				// 编程式事务处理，这里就不看了，编程式事务用的很少
 				Object result = ((CallbackPreferringPlatformTransactionManager) tm).execute(txAttr, status -> {
 					TransactionInfo txInfo = prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 					try {
@@ -459,10 +474,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			@Nullable TransactionAttribute txAttr, final String joinpointIdentification) {
 
 		// If no name specified, apply method identification as transaction name.
+		// 如果没有名称指定则使用方法唯一标识，并使用DelegatingTransactionAttribute封装txAttr
 		if (txAttr != null && txAttr.getName() == null) {
 			txAttr = new DelegatingTransactionAttribute(txAttr) {
 				@Override
 				public String getName() {
+					//获取切点名称？
 					return joinpointIdentification;
 				}
 			};
@@ -471,15 +488,16 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 获取TransactionStatus
 				status = tm.getTransaction(txAttr);
-			}
-			else {
+			} else {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Skipping transactional joinpoint [" + joinpointIdentification +
 							"] because no transaction manager has been configured");
 				}
 			}
 		}
+		// 根据指定的属性与status准备一个TransactionInfo
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
@@ -536,41 +554,45 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	/**
 	 * Handle a throwable, completing the transaction.
 	 * We may commit or roll back, depending on the configuration.
+	 *
 	 * @param txInfo information about the current transaction
-	 * @param ex throwable encountered
+	 * @param ex     throwable encountered
 	 */
 	protected void completeTransactionAfterThrowing(@Nullable TransactionInfo txInfo, Throwable ex) {
+		// 当抛出异常时首先判断当前是否存在事务，这是基础依据，也就是以下都基于当前方法存在事务的情况下
 		if (txInfo != null && txInfo.getTransactionStatus() != null) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() +
 						"] after exception: " + ex);
 			}
+			// 这里判断是否回滚默认的依据是抛出的异常是否是RuntimeException或者是Error的类型
+			//默认情况下Spring中的亊务异常处理机制只对RuntimeException和Error两种情况感兴趣，我们可以利用注解方式来改变，例如：
+			//@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+			//这里rollbackOn()默认进的是org.springframework.transaction.interceptor.DefaultTransactionAttribute.rollbackOn
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
+					//进行回滚
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
-				}
-				catch (TransactionSystemException ex2) {
+				} catch (TransactionSystemException ex2) {
 					logger.error("Application exception overridden by rollback exception", ex);
 					ex2.initApplicationException(ex);
 					throw ex2;
-				}
-				catch (RuntimeException | Error ex2) {
+				} catch (RuntimeException | Error ex2) {
 					logger.error("Application exception overridden by rollback exception", ex);
 					throw ex2;
 				}
-			}
-			else {
+			} else {
 				// We don't roll back on this exception.
 				// Will still roll back if TransactionStatus.isRollbackOnly() is true.
+				// 如果不满足回滚条件即使抛出异常也同样会提交
 				try {
+					//进行提交
 					txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
-				}
-				catch (TransactionSystemException ex2) {
+				} catch (TransactionSystemException ex2) {
 					logger.error("Application exception overridden by commit exception", ex);
 					ex2.initApplicationException(ex);
 					throw ex2;
-				}
-				catch (RuntimeException | Error ex2) {
+				} catch (RuntimeException | Error ex2) {
 					logger.error("Application exception overridden by commit exception", ex);
 					throw ex2;
 				}

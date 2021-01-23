@@ -78,12 +78,15 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		for (Class<?> rbRule : attributes.getClassArray("rollbackFor")) {
 			rollbackRules.add(new RollbackRuleAttribute(rbRule));
 		}
+		// 解析rollbackForClassName
 		for (String rbRule : attributes.getStringArray("rollbackForClassName")) {
 			rollbackRules.add(new RollbackRuleAttribute(rbRule));
 		}
+		// 解析noRollbackFor
 		for (Class<?> rbRule : attributes.getClassArray("noRollbackFor")) {
 			rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
 		}
+		// 解析noRollbackForClassName
 		for (String rbRule : attributes.getStringArray("noRollbackForClassName")) {
 			rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
 		}
