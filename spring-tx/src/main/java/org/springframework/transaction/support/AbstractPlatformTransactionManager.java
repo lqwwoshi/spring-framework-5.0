@@ -375,10 +375,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			// 如果此时不存在事务，当传播特性是REQUIRED或NEW或NESTED都会进入if语句块
 			// PROPAGATION_REQUIRED: 如果当前没有事物，则新建一个事物；如果已经存在一个事物，则加入到这个事物中
 			// PROPAGATION_REQUIRES_NEW: 新建事物，如果当前已经存在事物，则挂起当前事物
-			// PROPAGATION_NESTED: 如果当前存在事物，则在嵌套事物内执行；
-			// 如果当前没有事物，则与PROPAGATION_REQUIRED传播特性相同
-			// 综上: 这个if进来的都是必须存在一个事务，上面检测了存不存在事务，所以进到这里的肯定是不存在事务
-			// 但是因为事务传播这里需要新起一个事务
+			// PROPAGATION_NESTED: 如果当前存在事物，则在嵌套事物内执行；如果当前没有事物，则与PROPAGATION_REQUIRED传播特性相同
+			// 综上: 这个if进来的都是必须存在一个事务，因为上面检测了存不存在事务，所以进到这里的肯定是不存在事务
+			// 所有因为事务传播这里必定是新起一个事务
 			// 因为此时不存在事务，将null挂起(没理解什么意思。有时间具体细看)
 			SuspendedResourcesHolder suspendedResources = suspend(null);
 			if (debugEnabled) {
@@ -414,7 +413,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 	/**
 	 * Create a TransactionStatus for an existing transaction.
-	 * 在当前存在事务的情况下，根据传播特性去决定是否为新事务，是否挂起当前事务。
+	 * 在当前存在事务的情况下，根据传播特性去决定是否创建新事务，是否挂起当前事务。
 	 */
 	private TransactionStatus handleExistingTransaction(
 			TransactionDefinition definition, Object transaction, boolean debugEnabled)
@@ -601,8 +600,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	/**
 	 * Suspend the given transaction. Suspends transaction synchronization first,
 	 * then delegates to the {@code doSuspend} template method.
+	 *
 	 * @param transaction the current transaction object
-	 * (or {@code null} to just suspend active synchronizations, if any)
+	 *                    (or {@code null} to just suspend active synchronizations, if any)
 	 * @return an object that holds suspended resources
 	 * (or {@code null} if neither transaction nor synchronization active)
 	 * @see #doSuspend
@@ -610,7 +610,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	@Nullable
 	protected final SuspendedResourcesHolder suspend(@Nullable Object transaction) throws TransactionException {
+		//看了一下有一个线程本地变量存储当前线程是否处于同步事务的状态？
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			//暂停所有事务同步，触发回调吗？
 			List<TransactionSynchronization> suspendedSynchronizations = doSuspendSynchronization();
 			try {
 				Object suspendedResources = null;
@@ -631,19 +633,16 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				// 将事务各个属性与挂起的holder一并封装进SuspendedResourcesHolder对象中
 				return new SuspendedResourcesHolder(
 						suspendedResources, suspendedSynchronizations, name, readOnly, isolationLevel, wasActive);
-			}
-			catch (RuntimeException | Error ex) {
+			} catch (RuntimeException | Error ex) {
 				// doSuspend failed - original transaction is still active...
 				doResumeSynchronization(suspendedSynchronizations);
 				throw ex;
 			}
-		}
-		else if (transaction != null) {
+		} else if (transaction != null) {
 			// Transaction active but no synchronization active.
 			Object suspendedResources = doSuspend(transaction);
 			return new SuspendedResourcesHolder(suspendedResources);
-		}
-		else {
+		} else {
 			// Neither transaction nor synchronization active.
 			return null;
 		}

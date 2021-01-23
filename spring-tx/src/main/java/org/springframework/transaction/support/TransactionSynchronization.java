@@ -21,6 +21,7 @@ import java.io.Flushable;
 /**
  * Interface for transaction synchronization callbacks.
  * Supported by AbstractPlatformTransactionManager.
+ * 看起来是回调接口？
  *
  * <p>TransactionSynchronization implementations can implement the Ordered interface
  * to influence their execution order. A synchronization that does not implement the
