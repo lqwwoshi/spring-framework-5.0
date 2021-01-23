@@ -377,16 +377,18 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			// PROPAGATION_REQUIRES_NEW: 新建事物，如果当前已经存在事物，则挂起当前事物
 			// PROPAGATION_NESTED: 如果当前存在事物，则在嵌套事物内执行；如果当前没有事物，则与PROPAGATION_REQUIRED传播特性相同
 			// 综上: 这个if进来的都是必须存在一个事务，因为上面检测了存不存在事务，所以进到这里的肯定是不存在事务
-			// 所有因为事务传播这里必定是新起一个事务
+			// 所以因为事务传播这里必定是新起一个事务
 			// 因为此时不存在事务，将null挂起(没理解什么意思。有时间具体细看)
 			SuspendedResourcesHolder suspendedResources = suspend(null);
 			if (debugEnabled) {
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
 			}
 			try {
-				//是否是同步？
+				// 这个属性暂时不知道什么意思，但是我看了一下这个值默认是SYNCHRONIZATION_ALWAYS，所以这个默认是true
+				// 而且这个属性看了一下。。下面是boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
+				// 所以好像不同情况判断规则不同。。
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
-				// new一个status，存放刚刚创建的transaction，然后将其标记为新事务！
+				// new一个status，存放刚刚创建的transaction，然后将其标记为新事务！即新建一个事务?
 				// 这里transaction后面一个参数决定是否是新事务！
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
@@ -407,6 +409,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			// 其他的传播特性一律返回一个空事务，transaction = null
 			// 当前不存在事务，且传播机制=PROPAGATION_SUPPORTS/PROPAGATION_NOT_SUPPORTED/PROPAGATION_NEVER，这三种情况，创建“空”事务
 			boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
+			//看了一下这个prepareTransactionStatus其实也是调用newTransactionStatus()。。。只是还会调用prepareSynchronization(status, definition)
+			//说明不管是上面那种if，都会新建一个DefaultTransactionStatus()，只是可能里面的transaction不同，可能为null可能有值
 			return prepareTransactionStatus(definition, null, true, newSynchronization, debugEnabled, null);
 		}
 	}
@@ -445,7 +449,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 						definition.getName() + "]");
 			}
 			// 将原事务挂起，此时新建事务，不与原事务有关系
-			// 会将transaction中的holder设置为null，然后解绑！
+			// 会将transaction中的ConnectionHolder设置为null，然后解绑！
 			SuspendedResourcesHolder suspendedResources = suspend(transaction);
 			try {
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);

@@ -489,6 +489,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		if (txAttr != null) {
 			if (tm != null) {
 				// 获取TransactionStatus
+				//但是调用的是getTransaction()。。
 				status = tm.getTransaction(txAttr);
 			} else {
 				if (logger.isDebugEnabled()) {
@@ -497,7 +498,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				}
 			}
 		}
-		// 根据指定的属性与status准备一个TransactionInfo
+		// 根据指定的属性与构建好的status准备一个TransactionInfo
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
