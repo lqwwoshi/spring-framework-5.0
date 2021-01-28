@@ -120,7 +120,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						//通过class对象判断是不是切面
 						//其实就是判断两个
 						//1:是否有加@Aspect注解
-						//2:判断是否是AspectJ编译器编译的
+						//2:判断是否是非AspectJ编译器编译的
 						if (this.advisorFactory.isAspect(beanType)) {
 							//是切面类
 							//加入到缓存中

@@ -256,8 +256,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			}
 			/**
 			 * isInfrastructureClass: 判断是不是基础的Bean（Advice、PointCut、Advisor、AopInfrastructureBean）是就直接跳过
-			 * shouldSkip: 判断是不是应该跳过 (AOP解析直接解析出我们的切面信息(并且把我们的切面信息进行缓存)，而事务在这里是不会解析的)
-			 * 核心方法:shouldSkip
+			 * (核心方法)shouldSkip: 判断是不是应该跳过 (AOP解析直接解析出我们的切面信息(并且把我们的切面信息进行缓存)，但是事务的不缓存)
 			 */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
