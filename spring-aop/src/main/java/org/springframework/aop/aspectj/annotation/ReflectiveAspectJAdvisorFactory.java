@@ -72,15 +72,18 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	private static final Comparator<Method> METHOD_COMPARATOR;
 
 	static {
+		//排序规则
 		Comparator<Method> adviceKindComparator = new ConvertingComparator<>(
 				new InstanceComparator<>(
 						Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class),
+				//这里看情况会把方法上不带这些注解的方法给排除掉
 				(Converter<Method, Annotation>) method -> {
 					AspectJAnnotation<?> annotation =
-						AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(method);
+							AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(method);
 					return (annotation != null ? annotation.getAnnotation() : null);
 				});
 		Comparator<Method> methodNameComparator = new ConvertingComparator<>(Method::getName);
+		//赋值排序规则到METHOD_COMPARATOR上
 		METHOD_COMPARATOR = adviceKindComparator.thenComparing(methodNameComparator);
 	}
 
@@ -126,7 +129,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				new LazySingletonAspectInstanceFactoryDecorator(aspectInstanceFactory);
 
 		List<Advisor> advisors = new ArrayList<>();
-		//获取到切面类中的所有方法，但是该方法不会解析到标注了@PointCut注解的方法
+		//核心: 获取到切面类中的所有方法，但是该方法不会解析到标注了@PointCut注解的方法
 		for (Method method : getAdvisorMethods(aspectClass)) {
 			//循环解析我们切面中的方法，获得Advisor对象( 核心 )
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
@@ -157,7 +160,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		final List<Method> methods = new ArrayList<>();
 		ReflectionUtils.doWithMethods(aspectClass, method -> {
 			// Exclude pointcuts
-			// 排序切点注解，即切点注解不参与排序
+			// 排除切点注解，即切点注解不参与排序
 			if (AnnotationUtils.getAnnotation(method, Pointcut.class) == null) {
 				methods.add(method);
 			}
@@ -199,7 +202,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		validate(aspectInstanceFactory.getAspectMetadata().getAspectClass());
 
-		//获取切点表达式，因为之前把pointcut exclude了
+		//获取切点表达式，因为在getAdvisorMethods()时把pointcut exclude了
 		AspectJExpressionPointcut expressionPointcut = getPointcut(
 				candidateAdviceMethod, aspectInstanceFactory.getAspectMetadata().getAspectClass());
 		if (expressionPointcut == null) {

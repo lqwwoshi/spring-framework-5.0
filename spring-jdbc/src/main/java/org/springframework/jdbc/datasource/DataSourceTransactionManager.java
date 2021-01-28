@@ -239,8 +239,8 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
 		txObject.setSavepointAllowed(isNestedTransactionAllowed());
 		// 解绑与绑定的作用在此时体现，如果当前线程有绑定的话，将会取出holder
-		// 第一次conHolder肯定是null
-		// conHolder: 连接持有对象
+		// 而如果是第一次conHolder肯定是null
+		// ps: conHolder: 连接持有对象
 		ConnectionHolder conHolder =
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
 		// 此时的holder被标记成一个旧holder
@@ -330,10 +330,6 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		// 将transaction中的holder属性设置为空
 		txObject.setConnectionHolder(null);
 		// ConnnectionHolder从线程变量中解绑
-		// 解绑操作主要做如下几件事
-		// 将transaction中的holder属性设置为空
-		// 解绑（会返回线程中的那个旧的holder出来，从而封装到SuspendedResourcesHolder对象中）
-		// 将SuspendedResourcesHolder放入status中，方便后期子事务完成后，恢复外层事务
 		return TransactionSynchronizationManager.unbindResource(obtainDataSource());
 	}
 

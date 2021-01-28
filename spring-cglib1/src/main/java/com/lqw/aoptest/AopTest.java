@@ -2,6 +2,7 @@ package com.lqw.aoptest;
 
 import com.lqw.app.Appconfig;
 import com.lqw.zoctest.OrderService;
+import com.lqw.zoctest.OrderServiceImpl;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**

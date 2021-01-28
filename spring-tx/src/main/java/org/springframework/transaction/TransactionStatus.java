@@ -43,7 +43,6 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	 * in an existing transaction, or potentially not running in an actual
 	 * transaction in the first place.
 	 * 返回当前事务是否为新事务（否则将参与到现有事务中，或者可能一开始就不在实际事务中运行）
-	 * 即是否新建？
 	 */
 	boolean isNewTransaction();
 
@@ -58,7 +57,7 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	 * @see #rollbackToSavepoint(Object)
 	 * @see #releaseSavepoint(Object)
 	 * 返回该事务是否在内部携带保存点，也就是说，已经创建为基于保存点的嵌套事务。
-	 * 这个保存点的概念类似部分提交吗？
+	 *
 	 */
 	boolean hasSavepoint();
 
@@ -90,7 +89,7 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	 * transaction manager does not have a flush concept. A flush signal may
 	 * get applied to the primary resource or to transaction synchronizations,
 	 * depending on the underlying resource.
-	 *  将会话刷新到数据存储区
+	 *  将会话刷新到数据库中
 	 */
 	@Override
 	void flush();

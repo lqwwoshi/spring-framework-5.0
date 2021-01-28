@@ -286,7 +286,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// 获取beanFactory中的transactionManager
 		// 这个transactionManager看起来是自己配的？
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
-		// 构造方法唯一标识（类.方法，如：service.UserServiceImpl.save）
+		// 构造方法唯一标识（类.方法，如：service.UserServiceImpl.save），看起来像切点标识
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		// 声明式事务处理
@@ -311,7 +311,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				throw ex;
 			}
 			finally {
-				//消除事务信息
+				//把之前的TransactionInfo还原
 				cleanupTransactionInfo(txInfo);
 			}
 			// 提交事务
@@ -499,6 +499,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 		}
 		// 根据指定的属性与构建好的status准备一个TransactionInfo
+		// 值得注意的是这里prepareTransactionInfo不是只有new的逻辑，还有塞ThreadLocal的逻辑
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
@@ -534,6 +535,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// We always bind the TransactionInfo to the thread, even if we didn't create
 		// a new transaction here. This guarantees that the TransactionInfo stack
 		// will be managed correctly even if no transaction was created by this aspect.
+		// 重要: 把当面的TransactionInfo保存起来
 		txInfo.bindToThread();
 		return txInfo;
 	}
@@ -566,7 +568,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() +
 						"] after exception: " + ex);
 			}
-			// 这里判断是否回滚默认的依据是抛出的异常是否是RuntimeException或者是Error的类型
+			//这里判断是否回滚默认的依据是抛出的异常是否是RuntimeException或者是Error的类型
 			//默认情况下Spring中的亊务异常处理机制只对RuntimeException和Error两种情况感兴趣，我们可以利用注解方式来改变，例如：
 			//@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 			//这里rollbackOn()默认进的是org.springframework.transaction.interceptor.DefaultTransactionAttribute.rollbackOn

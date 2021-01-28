@@ -50,6 +50,8 @@ public interface TransactionDefinition {
 	 * Analogous to the EJB transaction attribute of the same name.
 	 * <p>This is typically the default setting of a transaction definition,
 	 * and typically defines a transaction synchronization scope.
+	 *
+	 * 支持当前事物，若当前没有事物就创建一个事物
 	 */
 	int PROPAGATION_REQUIRED = 0;
 
@@ -71,6 +73,8 @@ public interface TransactionDefinition {
 	 * "synchronization on actual transaction").
 	 * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#setTransactionSynchronization
 	 * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#SYNCHRONIZATION_ON_ACTUAL_TRANSACTION
+	 *
+	 *  如果当前存在事务，则加入该事务；如果当前没有事务，则以非事务的方式运行
 	 */
 	int PROPAGATION_SUPPORTS = 1;
 
@@ -79,6 +83,8 @@ public interface TransactionDefinition {
 	 * exists. Analogous to the EJB transaction attribute of the same name.
 	 * <p>Note that transaction synchronization within a {@code PROPAGATION_MANDATORY}
 	 * scope will always be driven by the surrounding transaction.
+	 *
+	 * 如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常
 	 */
 	int PROPAGATION_MANDATORY = 2;
 
@@ -94,6 +100,8 @@ public interface TransactionDefinition {
 	 * transaction synchronizations. Existing synchronizations will be suspended
 	 * and resumed appropriately.
 	 * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
+	 *
+	 * 创建一个新的事务，如果当前存在事务，则把当前事务挂起
 	 */
 	int PROPAGATION_REQUIRES_NEW = 3;
 
@@ -109,6 +117,8 @@ public interface TransactionDefinition {
 	 * {@code PROPAGATION_NOT_SUPPORTED} scope. Existing synchronizations
 	 * will be suspended and resumed appropriately.
 	 * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
+	 *
+	 * 以非事务方式运行，如果当前存在事务，则把当前事务挂起
 	 */
 	int PROPAGATION_NOT_SUPPORTED = 4;
 
@@ -117,6 +127,8 @@ public interface TransactionDefinition {
 	 * exists. Analogous to the EJB transaction attribute of the same name.
 	 * <p>Note that transaction synchronization is <i>not</i> available within a
 	 * {@code PROPAGATION_NEVER} scope.
+	 *
+	 * 以非事务方式运行，如果当前存在事务，则抛出异常
 	 */
 	int PROPAGATION_NEVER = 5;
 
@@ -130,6 +142,9 @@ public interface TransactionDefinition {
 	 * when working on a JDBC 3.0 driver. Some JTA providers might support
 	 * nested transactions as well.
 	 * @see org.springframework.jdbc.datasource.DataSourceTransactionManager
+	 *
+	 * 如果外层存在事务，就以嵌套事务运行，被嵌套的事务可以独立于外层事务进行提交或者回滚(保存点)，
+	 * 如果外层不存在事务,行为跟PROPAGATION_REQUIRES_NEW一样
 	 */
 	int PROPAGATION_NESTED = 6;
 
@@ -138,6 +153,7 @@ public interface TransactionDefinition {
 	 * Use the default isolation level of the underlying datastore.
 	 * All other levels correspond to the JDBC isolation levels.
 	 * @see java.sql.Connection
+	 * 使用数据库默认的隔离级别
 	 */
 	int ISOLATION_DEFAULT = -1;
 
@@ -149,6 +165,8 @@ public interface TransactionDefinition {
 	 * If any of the changes are rolled back, the second transaction will have
 	 * retrieved an invalid row.
 	 * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
+	 *
+	 * 读未提交
 	 */
 	int ISOLATION_READ_UNCOMMITTED = Connection.TRANSACTION_READ_UNCOMMITTED;
 
@@ -158,6 +176,8 @@ public interface TransactionDefinition {
 	 * <p>This level only prohibits a transaction from reading a row
 	 * with uncommitted changes in it.
 	 * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
+	 *
+	 * 读已提交
 	 */
 	int ISOLATION_READ_COMMITTED = Connection.TRANSACTION_READ_COMMITTED;
 
@@ -169,6 +189,8 @@ public interface TransactionDefinition {
 	 * a second transaction alters the row, and the first transaction re-reads the row,
 	 * getting different values the second time (a "non-repeatable read").
 	 * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
+	 *
+	 * 可重复读
 	 */
 	int ISOLATION_REPEATABLE_READ = Connection.TRANSACTION_REPEATABLE_READ;
 
@@ -182,6 +204,8 @@ public interface TransactionDefinition {
 	 * re-reads for the same condition, retrieving the additional "phantom" row
 	 * in the second read.
 	 * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
+	 *
+	 * 可串行化
 	 */
 	int ISOLATION_SERIALIZABLE = Connection.TRANSACTION_SERIALIZABLE;
 
@@ -189,6 +213,8 @@ public interface TransactionDefinition {
 	/**
 	 * Use the default timeout of the underlying transaction system,
 	 * or none if timeouts are not supported.
+	 *
+	 * 使用默认的超时时间
 	 */
 	int TIMEOUT_DEFAULT = -1;
 
@@ -200,6 +226,8 @@ public interface TransactionDefinition {
 	 * @return the propagation behavior
 	 * @see #PROPAGATION_REQUIRED
 	 * @see org.springframework.transaction.support.TransactionSynchronizationManager#isActualTransactionActive()
+	 *
+	 * 获取事物的传播行为
 	 */
 	int getPropagationBehavior();
 
@@ -219,6 +247,8 @@ public interface TransactionDefinition {
 	 * @return the isolation level
 	 * @see #ISOLATION_DEFAULT
 	 * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#setValidateExistingTransaction
+	 *
+	 * 获取事物的隔离级别
 	 */
 	int getIsolationLevel();
 
@@ -231,6 +261,8 @@ public interface TransactionDefinition {
 	 * <p>Note that a transaction manager that does not support timeouts will throw
 	 * an exception when given any other timeout than {@link #TIMEOUT_DEFAULT}.
 	 * @return the transaction timeout
+	 *
+	 * 获取事物的超时时间
 	 */
 	int getTimeout();
 
@@ -249,6 +281,8 @@ public interface TransactionDefinition {
 	 * @return {@code true} if the transaction is to be optimized as read-only
 	 * @see org.springframework.transaction.support.TransactionSynchronization#beforeCommit(boolean)
 	 * @see org.springframework.transaction.support.TransactionSynchronizationManager#isCurrentTransactionReadOnly()
+	 *
+	 * 是否为只读事物
 	 */
 	boolean isReadOnly();
 
@@ -261,6 +295,8 @@ public interface TransactionDefinition {
 	 * @return the name of this transaction
 	 * @see org.springframework.transaction.interceptor.TransactionAspectSupport
 	 * @see org.springframework.transaction.support.TransactionSynchronizationManager#getCurrentTransactionName()
+	 *
+	 * 获取当前事物的名称
 	 */
 	@Nullable
 	String getName();

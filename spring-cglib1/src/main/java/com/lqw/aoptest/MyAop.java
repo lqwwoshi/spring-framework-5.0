@@ -11,18 +11,28 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyAop {
 
-	@Pointcut("execution(* com.lqw.zoctest.*.*(..))")
-	public void pointCut() {}
+//	@Pointcut("execution(* com.lqw.zoctest.*.*(..))")
+//	public void pointCut() {}
+//
+//	@Before("pointCut()")
+//	public void before() {
+//		System.out.println("before");
+//	}
 
-	@Before("pointCut()")
-	public void before() {
+//	@After("pointCut()")
+//	public void after() {
+//		System.out.println("after");
+//	}
+
+	@Pointcut("execution(* com.lqw.zoctest.*.a*(..))")
+	public void pointCut1() {}
+
+	@Before("pointCut1()")
+	public void before1() {
 		System.out.println("before");
 	}
 //
-	@After("pointCut()")
-	public void after() {
-		System.out.println("after");
-	}
+
 //
 //	@AfterThrowing("pointCut()")
 //	public void afterThrowing() {
