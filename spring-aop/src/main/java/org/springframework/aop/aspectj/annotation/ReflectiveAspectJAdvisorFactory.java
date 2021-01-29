@@ -129,9 +129,10 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				new LazySingletonAspectInstanceFactoryDecorator(aspectInstanceFactory);
 
 		List<Advisor> advisors = new ArrayList<>();
-		//核心: 获取到切面类中的所有方法，但是该方法不会解析到标注了@PointCut注解的方法
+		//核心: 获取到切面类中被四种通知类型标注的方法，注意不会解析到标注了@PointCut注解的方法
 		for (Method method : getAdvisorMethods(aspectClass)) {
 			//循环解析我们切面中的方法，获得Advisor对象( 核心 )
+			// 这里会解析@PointCut注解，获取切点，塞到Advisor对象当中
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
 			if (advisor != null) {
 				advisors.add(advisor);

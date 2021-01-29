@@ -253,9 +253,13 @@ public abstract class AopUtils {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			//循环所有方法
 			for (Method method : methods) {
-				//用introductionAwareMethodMatcher的match()方法进行匹配，尝试看了一下
-				//比较复杂，嵌套多，只要知道这里会用aspectJ的切点表达式匹配规则进行匹配就可以了
-				//值得注意的是如果表达式从包开始就不匹配，那么一样的也会在这里进行match，当然结果是false
+				//两种:
+				//1:当为AspectJ切面时，这里introductionAwareMethodMatcher!=null
+				//会进IntroductionAwareMethodMatcher.match()进行匹配，比较复杂，嵌套多，只要知道这里会用aspectJ的切点表达式匹配规则进行匹配就可以了
+				//值得注意的是如果表达式从包开始就不匹配，那么一样的只会在这里进行match，当然结果是false
+
+				//2:当为Spring事务时，这里introductionAwareMethodMatcher==null
+				//会进AspectJExpressionPointcut#matches，进行@Transactional注解的匹配
 				if (introductionAwareMethodMatcher != null ?
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
 						//通过方法匹配器进行匹配

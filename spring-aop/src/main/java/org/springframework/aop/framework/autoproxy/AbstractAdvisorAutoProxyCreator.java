@@ -98,7 +98,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		//主要就是判断找到的通知能不能作用到当前的类上
 		//这里会进行一些校验操作
 		//1:比如切点匹配，因为Advisor会有切点表达式
-		//2:比如切点表达式匹配即这里是切点和声明的通知的匹配过程
+		//2:比如切点表达式匹配即这里是通知和类的匹配过程
 		//比如说你切点声明名字写错了，就是这里会抛异常
 		//比如说这个bean有没有增强器对象可以应用(即这个类在不在切点表达式内。。)
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
