@@ -49,11 +49,14 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 		//proxyTargetClass为false则使用jdk代理，为true则使用cglib代理
 		if (enableAspectJAutoProxy != null) {
 			if (enableAspectJAutoProxy.getBoolean("proxyTargetClass")) {
-				//proxyTargetClass为true使用jdk动态代理
+				//这里只是放在org.springframework.aop.config.internalAutoProxyCreator内部存起来
+				//但是这个字段的含义是proxyTargetClass为true使用cglib代理的
 				AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 			}
-			//exposeProxy为true则暴露代理对象到线程上下文当中
+
 			if (enableAspectJAutoProxy.getBoolean("exposeProxy")) {
+				//这里同样只是放在org.springframework.aop.config.internalAutoProxyCreator内部存起来
+				//但是这个字段的含义是exposeProxy为true则暴露代理对象到线程上下文当中
 				AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
 			}
 		}

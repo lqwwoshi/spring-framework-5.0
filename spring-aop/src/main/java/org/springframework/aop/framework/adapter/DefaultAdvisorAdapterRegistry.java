@@ -82,14 +82,20 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		if (advice instanceof MethodInterceptor) {
 			interceptors.add((MethodInterceptor) advice);
 		}
+		//这个adapter严重怀疑是Spring自身的坑。。可能是由不同的人写的。。可以看到这个adapters只有三个值，before，afterReturning，Throws这三种
+		//而这三个类型的advice是没有实现MethodInterceptor接口的，所以不能直接加到结果集当中。需要一层适配才能把他加到最后结果集当中
 		for (AdvisorAdapter adapter : this.adapters) {
 			if (adapter.supportsAdvice(advice)) {
+				//所谓的适配其实也就是包装，最后包装成实现MethodInterceptor的类
 				interceptors.add(adapter.getInterceptor(advisor));
 			}
 		}
 		if (interceptors.isEmpty()) {
 			throw new UnknownAdviceTypeException(advisor.getAdvice());
 		}
+		//举个例子:
+		//比如说这里的Advisor对应的AfterAdvice，那么就不会进adapter逻辑，不需要适配，可以直接return
+		//而如果是BeforeAdvice，那么就需要适配，最终返回的类就是MethodBeforeAdviceInterceptor，里面包装一个MethodBeforeAdvice
 		return interceptors.toArray(new MethodInterceptor[0]);
 	}
 

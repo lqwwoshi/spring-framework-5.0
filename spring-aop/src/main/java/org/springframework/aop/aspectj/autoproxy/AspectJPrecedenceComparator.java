@@ -90,11 +90,14 @@ class AspectJPrecedenceComparator implements Comparator<Advisor> {
 	private int comparePrecedenceWithinAspect(Advisor advisor1, Advisor advisor2) {
 		//利用设置的declarationOrder进行切面内的方法排序
 
+		//这里蛮特特殊的。需要区分是否AfterAdvice类型的通知
 		boolean oneOrOtherIsAfterAdvice =
 				(AspectJAopUtils.isAfterAdvice(advisor1) || AspectJAopUtils.isAfterAdvice(advisor2));
 		int adviceDeclarationOrderDelta = getAspectDeclarationOrder(advisor1) - getAspectDeclarationOrder(advisor2);
 
 		if (oneOrOtherIsAfterAdvice) {
+			//如果有AfterAdvice类型的通知，declarationOrder越大优先级越高
+
 			// the advice declared last has higher precedence
 			if (adviceDeclarationOrderDelta < 0) {
 				// advice1 was declared before advice2
@@ -109,6 +112,8 @@ class AspectJPrecedenceComparator implements Comparator<Advisor> {
 			}
 		}
 		else {
+			//如果没有AfterAdvice类型的通知，declarationOrder越小优先级越高
+
 			// the advice declared first has higher precedence
 			if (adviceDeclarationOrderDelta < 0) {
 				// advice1 was declared before advice2

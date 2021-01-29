@@ -102,7 +102,6 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 		if (!this.active) {
 			activate();
 		}
-		//这边有个ProxyFactory可以看下是什么时候创建的
 		return getAopProxyFactory().createAopProxy(this);
 	}
 
