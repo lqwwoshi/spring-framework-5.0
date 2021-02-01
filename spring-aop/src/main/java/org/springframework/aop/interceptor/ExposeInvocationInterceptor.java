@@ -87,8 +87,10 @@ public class ExposeInvocationInterceptor implements MethodInterceptor, PriorityO
 	@Override
 	public Object invoke(MethodInvocation mi) throws Throwable {
 		MethodInvocation oldInvocation = invocation.get();
+		//只是把当前正在执行的MethodInvocation给暂存起来
 		invocation.set(mi);
 		try {
+			//执行下一个通知
 			return mi.proceed();
 		}
 		finally {
