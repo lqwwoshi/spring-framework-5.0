@@ -88,17 +88,17 @@ class InstantiationModelAwarePointcutAdvisorImpl
 		this.declaredPointcut = declaredPointcut;
 		//切面的class对象
 		this.declaringClass = aspectJAdviceMethod.getDeclaringClass();
-		//切面方法的名称
+		//通知方法的名称
 		this.methodName = aspectJAdviceMethod.getName();
-		//切面方法的参数类型
+		//通知方法的参数类型
 		this.parameterTypes = aspectJAdviceMethod.getParameterTypes();
-		//切面方法对象
+		//通知方法对象
 		this.aspectJAdviceMethod = aspectJAdviceMethod;
 		//aspectj的通知工厂
 		this.aspectJAdvisorFactory = aspectJAdvisorFactory;
 		//aspect的实例工厂
 		this.aspectInstanceFactory = aspectInstanceFactory;
-		//切面的顺序
+		//通知的顺序
 		this.declarationOrder = declarationOrder;
 		//切面的名称
 		this.aspectName = aspectName;
@@ -122,7 +122,7 @@ class InstantiationModelAwarePointcutAdvisorImpl
 			// A singleton aspect.
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
-			//将切面中的通知构造为advice通知对象
+			//核心: 将切面中的通知构造为advice通知对象
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
 	}

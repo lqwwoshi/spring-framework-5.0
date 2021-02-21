@@ -118,7 +118,9 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating JDK dynamic proxy: target source is " + this.advised.getTargetSource());
 		}
+		//找到目标类实现的所有类
 		Class<?>[] proxiedInterfaces = AopProxyUtils.completeProxiedInterfaces(this.advised, true);
+		//这个方法没啥用。。就是标识下是否实现了equals()和hashcode()
 		findDefinedEqualsAndHashCodeMethods(proxiedInterfaces);
 		//可以看到Java动态代理最重要的InvocationHandler就是h自己
 		return Proxy.newProxyInstance(classLoader, proxiedInterfaces, this);
@@ -189,7 +191,6 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			/**
 			 * 这个配置是暴露我们的代理对象到线程变量中，需要搭配@EnableAspectJAutoProxy(exposeProxy = true)一起使用
 			 * 比如在目标对象方法中再次获取代理对象可以使用这个AopContext.currentProxy()
-			 * 还有的就是事务方法调用事务方法的时候也是用到这个
 			 */
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
@@ -206,7 +207,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
 			// Get the interception chain for this method.
-			//把aop的advisor转化为拦截器链，这里就很重要了，链式结构就在这里出来的
+			//可以简单的理解为把Advisor对应的advices转化为拦截器链，链式结构就在这里出来的
 			//值得注意的是这里拿出来的是Advice集合了
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 

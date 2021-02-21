@@ -120,7 +120,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						//通过class对象判断是不是切面
 						//其实就是判断两个
 						//1:是否有加@Aspect注解
-						//2:判断是否是AspectJ编译器编译的
+						//2:判断是否是非AspectJ编译器编译的
 						if (this.advisorFactory.isAspect(beanType)) {
 							//是切面类
 							//加入到缓存中
@@ -135,7 +135,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
 								//真正的去获取我们的通知实例(核心方法)
 								//大致看了一下就是找类里面的带四个类似@Before等注解的方法，然后封装一下
-								//这里应该不进行校验，即如果声明的切点不存在，这里也不会有校验，真正校验1的地方不在这里
+								//这里不进行校验，即如果声明的切点不存在，这里也不会有校验，真正校验的地方不在这里
 								//即一个切面类的一个通知方法作为一个Advisor，而整体切面类是Aspect
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								//加入到缓存

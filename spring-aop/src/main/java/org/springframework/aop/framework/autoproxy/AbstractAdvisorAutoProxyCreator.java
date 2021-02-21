@@ -98,7 +98,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		//主要就是判断找到的通知能不能作用到当前的类上
 		//这里会进行一些校验操作
 		//1:比如切点匹配，因为Advisor会有切点表达式
-		//2:比如切点表达式匹配即这里是切点和声明的通知的匹配过程
+		//2:比如切点表达式匹配即这里是通知和类的匹配过程
 		//比如说你切点声明名字写错了，就是这里会抛异常
 		//比如说这个bean有没有增强器对象可以应用(即这个类在不在切点表达式内。。)
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
@@ -110,17 +110,28 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 			//为了拼接成chain做准备
 			//这里排序看了比较久，主要原因是因为
 			//这边的类继承结构比较复杂，大致讲一下主要原理
+			//首先要明白一点:
+			//这里的排序是分两个层面的:
+			//一个是切面级别的排序的，另外一个是切面内的排序
+			//先说切面级别的排序:
 			//每个advisor都是advice的封装对象，而各种advice都是
 			//AspectJAfterAdvice的子类，AspectJAfterAdvice继承了
 			//AbstractAspectJAdvice，这个类继承了AspectJPrecedenceInformation
 			//AspectJPrecedenceInformation继承了Ordered，返回int值，用于排序...
-			//总的来说就是实现了Ordered接口，从而进行排序
+			//总的来说就是实现了Ordered接口，从而进行排序，具体每个切面的Order值是可以打注解自定义的，而如果没有定义则默认都是一样的值，是int最大值+1
+			//而排序规则，熟悉Order接口的同学都知道，值越小优先级越高
+
+			//切面内的排序:
+			//切面内的排序和Advice的declarationOrder的值有关系，而Advice的值怎么来的可以看其解析构造时塞入的逻辑
+			//而declarationOrder的排序规则则和Order接口不一样。。是declarationOrder越大优先级越高。。
+			//举个例子我们假设只有1个切面的情况下:
 			//排序结果如下:
 			//1:系统默认的在最前面,即刚刚加的ExposeInvocationInterceptor
 			//2:afterThrowing
 			//3:afterRunning
 			//4:after
-			//5:before
+			//5:around
+			//6:before
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;

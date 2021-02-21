@@ -163,7 +163,9 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		//首先currentInterceptorIndex是-1，不是从0开始的，为什么不是从0开始。。我也没有理解
 		//所以如果当前的currentInterceptorIndex是advise总数-1的时候，那就是没有advise需要织入了
 		//那么当然去执行目标方法
-		//todo 可以看下interceptorsAndDynamicMethodMatchers的初始化和里面的对象结构
+		//这个this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1还可以这么理解
+		//我们看到下面的方法是++this.currentInterceptorIndex,即先加然后取加之后的结果，而如果这时候是this.interceptorsAndDynamicMethodMatchers.size()-1
+		//还往下走的话，下面就会去取得this.interceptorsAndDynamicMethodMatchers.size()的位置的元素了，数组就越界了
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 			return invokeJoinpoint();
 		}
