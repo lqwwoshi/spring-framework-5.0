@@ -14,6 +14,6 @@ public class AopTest {
 		AnnotationConfigApplicationContext annotationConfigApplicationContext
 				= new AnnotationConfigApplicationContext(Appconfig.class);
 		OrderService orderService = annotationConfigApplicationContext.getBean(OrderService.class);
-		orderService.test();
+//		orderService.test();
 	}
 }
