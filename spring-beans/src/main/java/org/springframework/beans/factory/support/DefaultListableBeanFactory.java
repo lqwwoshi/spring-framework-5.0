@@ -1087,6 +1087,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			return new Jsr330ProviderFactory().createDependencyProvider(descriptor, requestingBeanName);
 		}
 		else {
+			//上面都不用管，都是特殊情况，我们一般都会进下面那个if
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
@@ -1123,7 +1124,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 			//一般都为null。看了一下，是否是注入特殊类型，比如map，array
 			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
-			//特殊类型直接返回，比如map。他注入的是这个类型的所有Beana,所以不用
+			//特殊类型直接返回，比如map。他注入的是这个类型的所有Bean,所以不用
 			//下面的根据BeanName进行匹配了
 			if (multipleBeans != null) {
 				return multipleBeans;
