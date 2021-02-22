@@ -123,7 +123,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 			//切面内的排序:
 			//切面内的排序和Advice的declarationOrder的值有关系，而Advice的值怎么来的可以看其解析构造时塞入的逻辑
-			//而declarationOrder的排序规则则和Order接口不一样。。是declarationOrder越大优先级越高。。
+			//而declarationOrder的排序规则则和Order接口不一样。。declarationOrder是分情况的。。不是一定越大越高或者越大越低
 			//举个例子我们假设只有1个切面的情况下:
 			//排序结果如下:
 			//1:系统默认的在最前面,即刚刚加的ExposeInvocationInterceptor
