@@ -18,6 +18,8 @@ package org.springframework.web.socket;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 
@@ -69,9 +71,7 @@ public class TomcatWebSocketTestServer implements WebSocketTestServer {
 
 	private File createTempDir(String prefix) {
 		try {
-			File tempFolder = File.createTempFile(prefix + ".", "." + getPort());
-			tempFolder.delete();
-			tempFolder.mkdir();
+			File tempFolder = Files.createTempDirectory(prefix + "." + "." + getPort()).toFile();
 			tempFolder.deleteOnExit();
 			return tempFolder;
 		}
