@@ -18,6 +18,7 @@ package org.springframework.core.env;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -194,7 +195,7 @@ public class EnvironmentSystemIntegrationTests {
 	@Test
 	public void fileSystemXmlApplicationContext() throws IOException {
 		ClassPathResource xml = new ClassPathResource(XML_PATH);
-		File tmpFile = File.createTempFile("test", "xml");
+		File tmpFile = Files.createTempFile("test", "xml").toFile();
 		FileCopyUtils.copy(xml.getFile(), tmpFile);
 
 		// strange - FSXAC strips leading '/' unless prefixed with 'file:'
